@@ -1,7 +1,7 @@
 /**
  * API client module for GoDB
  */
-const API = {
+window.API = {
   async request(endpoint, options = {}) {
     const defaultHeaders = {
       'Content-Type': 'application/json',

@@ -1,7 +1,7 @@
 /**
  * Main application coordinator for GoDB
  */
-const App = {
+window.App = {
   activeDB: 'default',
   schema: { tables: [], relations: [] },
   activeTab: 'visualizer',
@@ -9,6 +9,9 @@ const App = {
 
   async init() {
     this.bindEvents();
+    if (window.Visualizer && typeof Visualizer.init === 'function') Visualizer.init();
+    if (window.DataEntry && typeof DataEntry.init === 'function') DataEntry.init();
+    if (window.QueryBuilder && typeof QueryBuilder.init === 'function') QueryBuilder.init();
     await this.loadDatabases();
     await this.refreshSchema();
     this.switchTab('visualizer');
@@ -86,17 +89,23 @@ const App = {
     const btnLoadSample = document.getElementById('btn-load-sample');
     if (btnLoadSample) {
       btnLoadSample.addEventListener('click', async () => {
-        if (!confirm(`Load sample E-Commerce tables into database '${this.activeDB}'? (Existing sample tables will be re-created)`)) {
-          return;
-        }
-        try {
-          await API.loadSample();
-          this.showToast('Sample E-Commerce database loaded successfully!', 'success');
-          await this.refreshSchema();
-        } catch (err) {
-          this.showToast(err.message, 'error');
-        }
+        await this.triggerLoadSample();
       });
+    }
+  },
+
+  async triggerLoadSample() {
+    try {
+      this.showToast('Loading sample database...', 'info');
+      await API.loadSample();
+      this.showToast('Sample E-Commerce database loaded successfully!', 'success');
+      await this.loadDatabases();
+      await this.refreshSchema();
+      if (window.Visualizer) {
+        Visualizer.autoLayout();
+      }
+    } catch (err) {
+      this.showToast(err.message, 'error');
     }
   },
 

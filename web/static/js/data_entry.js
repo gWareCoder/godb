@@ -1,7 +1,7 @@
 /**
  * Data Entry & Management Screen: Dynamic Forms, Smart FK Dropdowns, Data Grid, and CRUD
  */
-const DataEntry = {
+window.DataEntry = {
   currentTable: null,
   tableSchema: null,
   rows: [],

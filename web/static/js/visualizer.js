@@ -1,14 +1,14 @@
 /**
  * Visualizer Module: Interactive ER Diagram, Draggable Tables, SVG Connectors, and Visual Schema Creation
  */
-const Visualizer = {
+window.Visualizer = {
   canvas: null,
   svgLayer: null,
   schema: null,
   tablePositions: {}, // { [tableName]: { x, y } }
   zoom: 1.0,
-  panX: 0,
-  panY: 0,
+  panX: 30,
+  panY: 30,
   isPanning: false,
   startPan: { x: 0, y: 0 },
   draggingCard: null,
@@ -17,6 +17,7 @@ const Visualizer = {
   init() {
     this.canvas = document.getElementById('visualizer-canvas');
     this.svgLayer = document.getElementById('visualizer-svg');
+    this.applyTransform();
     this.bindEvents();
   },
 
@@ -65,8 +66,8 @@ const Visualizer = {
     document.getElementById('btn-zoom-out')?.addEventListener('click', () => this.setZoom(this.zoom - 0.15));
     document.getElementById('btn-zoom-reset')?.addEventListener('click', () => {
       this.zoom = 1.0;
-      this.panX = 40;
-      this.panY = 40;
+      this.panX = 30;
+      this.panY = 30;
       this.applyTransform();
     });
     document.getElementById('btn-auto-layout')?.addEventListener('click', () => this.autoLayout());
@@ -99,6 +100,7 @@ const Visualizer = {
   },
 
   onTabActivate() {
+    this.applyTransform();
     this.drawConnections();
   },
 
@@ -107,11 +109,25 @@ const Visualizer = {
     if (!this.canvas) this.init();
     if (!this.canvas) return;
 
-    // Clear existing table cards
-    const existingCards = this.canvas.querySelectorAll('.table-card');
-    existingCards.forEach(c => c.remove());
+    // Clear existing table cards & empty state
+    this.canvas.querySelectorAll('.table-card, .canvas-empty-state').forEach(c => c.remove());
 
     if (!schema.tables || schema.tables.length === 0) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'canvas-empty-state';
+      emptyDiv.style.cssText = 'position:absolute;top:60px;left:60px;background:var(--bg-secondary);border:1px solid var(--border-color);padding:2rem 2.5rem;border-radius:var(--radius-lg);text-align:center;box-shadow:var(--shadow-xl);max-width:440px;z-index:25;';
+      emptyDiv.innerHTML = `
+        <div style="font-size:2.5rem;margin-bottom:0.75rem;">🗄️</div>
+        <h3 style="margin-bottom:0.5rem;color:#fff;">Database is Empty</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:1.25rem;">
+          There are no tables in this database yet. You can create tables visually or load sample e-commerce data.
+        </p>
+        <div style="display:flex;gap:0.75rem;justify-content:center;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="Visualizer.openCreateTableModal()">➕ Create Table</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="App.triggerLoadSample()">📦 Load Sample DB</button>
+        </div>
+      `;
+      this.canvas.appendChild(emptyDiv);
       this.drawConnections();
       return;
     }
@@ -135,8 +151,9 @@ const Visualizer = {
       this.renderTableCard(tbl);
     });
 
+    this.applyTransform();
     // Draw lines after cards are rendered
-    setTimeout(() => this.drawConnections(), 50);
+    setTimeout(() => this.drawConnections(), 60);
   },
 
   autoLayout() {
@@ -155,8 +172,8 @@ const Visualizer = {
         card.style.top = `${this.tablePositions[tbl.name].y}px`;
       }
     });
-    this.panX = 40;
-    this.panY = 40;
+    this.panX = 30;
+    this.panY = 30;
     this.zoom = 1.0;
     this.applyTransform();
     this.drawConnections();

@@ -1,7 +1,7 @@
 /**
  * Query Builder Module: Visual SQL Query Construction, Real-time Preview, and Raw SQL Console
  */
-const QueryBuilder = {
+window.QueryBuilder = {
   schema: null,
   baseTable: null,
   selectedColumns: new Set(),
