@@ -232,6 +232,7 @@
   background-color: #0c101b;
   border-bottom: 1px solid var(--border-color);
   position: relative;
+  flex-shrink: 0;
 }
 
 .sql-textarea {
