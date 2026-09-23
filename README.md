@@ -6,6 +6,8 @@
 
 **GoDB** is a full-featured, self-contained relational database management application built by [@gwarecoder](https://github.com/gwarecoder) with a high-performance Go backend and an interactive web frontend. It allows users to create databases, visually design and link tables with foreign keys, manage records using intuitive dynamic data entry screens, and construct SQL queries using a visual query builder and raw SQL console.
 
+![GoDB Schema Visualizer](docs/screenshots/schema_visualizer.png)
+
 ---
 
 ## Key Features
