@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoDB - Visual Database & Query Studio</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/visualizer.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">🗄️</div>
+      <span>GoDB</span>
+      <span style="font-size:0.75rem;font-weight:500;color:var(--text-dim);background:var(--bg-tertiary);padding:0.2rem 0.5rem;border-radius:var(--radius-sm);">v1.0</span>
+    </div>
+
+    <!-- Center Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab-btn active" data-tab="visualizer">
+        <span>🎨</span>
+        <span>Schema Visualizer</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="data">
+        <span>📝</span>
+        <span>Data Entry</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="query">
+        <span>⚡</span>
+        <span>SQL Query Builder</span>
+      </button>
+    </nav>
+
+    <!-- Right Header Actions & Database Switcher -->
+    <div class="header-actions">
+      <div class="db-selector-wrapper">
+        <label for="db-select">DB:</label>
+        <select id="db-select" class="db-select">
+          <option value="default">default.db</option>
+        </select>
+      </div>
+
+      <button id="btn-load-sample" class="btn btn-secondary btn-sm" title="Load sample e-commerce tables">
+        <span>📦</span>
+        <span>Load Sample DB</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspaces Container -->
+  <main class="app-main">
+
+    <!-- TAB 1: Visualizer (ER Diagram, Visual Table Creator, Table Linker) -->
+    <section id="tab-visualizer" class="tab-pane active">
+      <div id="visualizer-wrapper" class="visualizer-wrapper">
+        <!-- Floating Canvas Toolbar -->
+        <div class="visualizer-toolbar">
+          <button id="btn-modal-create-table" class="btn btn-primary btn-sm">
+            <span>➕</span>
+            <span>Create Table</span>
+          </button>
+          <button id="btn-modal-link-tables" class="btn btn-secondary btn-sm">
+            <span>🔗</span>
+            <span>Link Tables</span>
+          </button>
+          <div class="divider"></div>
+          <button id="btn-auto-layout" class="btn btn-secondary btn-sm" title="Auto arrange tables">
+            <span>🪄</span>
+            <span>Auto Layout</span>
+          </button>
+          <div class="divider"></div>
+          <button id="btn-zoom-in" class="btn btn-secondary btn-sm btn-icon" title="Zoom in">🔍+</button>
+          <button id="btn-zoom-out" class="btn btn-secondary btn-sm btn-icon" title="Zoom out">🔍-</button>
+          <button id="btn-zoom-reset" class="btn btn-secondary btn-sm btn-icon" title="Reset view">⟲</button>
+          <span id="zoom-val" class="zoom-indicator">100%</span>
+        </div>
+
+        <!-- Draggable Canvas & SVG Overlay -->
+        <div id="visualizer-canvas" class="visualizer-canvas">
+          <svg id="visualizer-svg" class="visualizer-svg-layer"></svg>
+          <!-- Table cards will be injected here dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Data Entry & Management Screen -->
+    <section id="tab-data" class="tab-pane">
+      <div class="data-screen-layout">
+        <!-- Tables Sidebar -->
+        <aside class="data-sidebar">
+          <div class="sidebar-header">
+            <span class="sidebar-title">Tables</span>
+            <button id="btn-sidebar-add-table" class="btn btn-primary btn-sm btn-icon" title="New Table" onclick="Visualizer.openCreateTableModal()">➕</button>
+          </div>
+          <ul id="data-tables-list" class="table-list">
+            <!-- Table list items dynamically injected -->
+          </ul>
+        </aside>
+
+        <!-- Main Data Workspace -->
+        <div class="data-content">
+          <!-- Toolbar -->
+          <div class="data-toolbar">
+            <div class="toolbar-left">
+              <h2 id="current-table-title" style="font-size:1.15rem;font-weight:700;">Select Table</h2>
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="data-search-input" class="form-control" placeholder="Search records...">
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <button id="btn-add-record" class="btn btn-primary btn-sm">
+                <span>➕</span>
+                <span>Add Record</span>
+              </button>
+              <button id="btn-refresh-data" class="btn btn-secondary btn-sm btn-icon" title="Refresh">🔄</button>
+              <button id="btn-export-csv" class="btn btn-secondary btn-sm" title="Export Table as CSV">
+                <span>📥</span>
+                <span>Export CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="table-container">
+            <table class="styled-table">
+              <thead id="data-table-head"></thead>
+              <tbody id="data-table-body">
+                <tr><td style="text-align:center;padding:3rem;color:var(--text-dim);">Select a table to view and enter data.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Footer -->
+          <footer class="pagination-footer">
+            <span id="data-pagination-info">Showing 0-0 of 0 records</span>
+            <div class="pagination-controls">
+              <select id="page-size-select" class="form-control" style="width:90px;padding:0.25rem 0.5rem;font-size:0.8rem;">
+                <option value="10">10 / page</option>
+                <option value="25" selected>25 / page</option>
+                <option value="50">50 / page</option>
+                <option value="100">100 / page</option>
+              </select>
+              <button id="btn-prev-page" class="btn btn-secondary btn-sm" disabled>◀ Prev</button>
+              <button id="btn-next-page" class="btn btn-secondary btn-sm" disabled>Next ▶</button>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SQL Query Builder & Raw Console -->
+    <section id="tab-query" class="tab-pane">
+      <div class="query-builder-layout">
+        <!-- Left: Builder Sidebar -->
+        <aside class="qb-sidebar">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+            <div style="display:flex;gap:0.25rem;background:var(--bg-tertiary);padding:0.25rem;border-radius:var(--radius-md);">
+              <button class="btn btn-sm qb-mode-btn active" data-mode="visual" style="font-size:0.8rem;">Visual Builder</button>
+              <button class="btn btn-sm qb-mode-btn" data-mode="raw" style="font-size:0.8rem;">Raw SQL Console</button>
+            </div>
+          </div>
+
+          <!-- Visual Builder Controls -->
+          <div id="qb-visual-panel">
+            <!-- Base Table -->
+            <div class="form-group">
+              <label for="qb-base-table">FROM Table</label>
+              <select id="qb-base-table" class="form-control"></select>
+            </div>
+
+            <!-- Suggested 1-Click Joins -->
+            <div id="qb-suggested-joins"></div>
+
+            <!-- Columns Selector -->
+            <div class="form-group">
+              <div class="qb-section-title">
+                <span>SELECT Columns</span>
+              </div>
+              <div id="qb-columns-selector" style="max-height: 180px; overflow-y: auto; background: var(--bg-tertiary); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);"></div>
+            </div>
+
+            <!-- JOINs -->
+            <div class="form-group">
+              <div class="qb-section-title">
+                <span>JOIN Relationships</span>
+                <button id="btn-add-join" type="button" class="btn btn-secondary btn-sm" style="font-size:0.75rem;">+ Add JOIN</button>
+              </div>
+              <div id="qb-joins-container"></div>
+            </div>
+
+            <!-- WHERE Filters -->
+            <div class="form-group">
+              <div class="qb-section-title">
+                <span>WHERE Filters</span>
+                <button id="btn-add-condition" type="button" class="btn btn-secondary btn-sm" style="font-size:0.75rem;">+ Add Filter</button>
+              </div>
+              <div id="qb-conditions-container"></div>
+            </div>
+
+            <!-- ORDER BY & LIMIT -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="qb-order-by">ORDER BY</label>
+                <select id="qb-order-by" class="form-control"></select>
+              </div>
+              <div class="form-group" style="flex:0.6;">
+                <label for="qb-order-dir">Direction</label>
+                <select id="qb-order-dir" class="form-control">
+                  <option value="ASC">ASC</option>
+                  <option value="DESC">DESC</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:0.6;">
+                <label for="qb-limit">LIMIT</label>
+                <input type="number" id="qb-limit" class="form-control" value="50" min="1" max="1000">
+              </div>
+            </div>
+
+            <button id="btn-run-visual-query" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">
+              <span>▶ Run Visual Query</span>
+            </button>
+          </div>
+
+          <!-- Raw SQL Console Controls -->
+          <div id="qb-raw-panel" style="display:none;">
+            <div class="form-group">
+              <label for="sql-template-select">Quick SQL Snippets:</label>
+              <select id="sql-template-select" class="form-control">
+                <option value="">-- Load a query template --</option>
+                <option value="select_all">SELECT * FROM table LIMIT 25</option>
+                <option value="join_sample">Orders with Customer Names (JOIN)</option>
+                <option value="count_group">COUNT(*) GROUP BY</option>
+                <option value="tables_list">List all sqlite tables</option>
+              </select>
+            </div>
+            <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.75rem;">
+              Tip: Press <kbd style="background:var(--bg-tertiary);padding:0.1rem 0.3rem;border-radius:3px;">Ctrl</kbd> + <kbd style="background:var(--bg-tertiary);padding:0.1rem 0.3rem;border-radius:3px;">Enter</kbd> to run query instantly.
+            </p>
+            <button id="btn-run-raw-sql" class="btn btn-primary" style="width:100%;">
+              <span>▶ Execute SQL</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Right: Real-time SQL Preview & Execution Results -->
+        <div class="qb-preview-area">
+          <div class="sql-editor-container">
+            <label style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--accent);margin-bottom:0.4rem;display:block;">
+              Generated SQL / Query Editor:
+            </label>
+            <textarea id="raw-sql-input" class="sql-textarea" placeholder="SELECT * FROM customers..."></textarea>
+          </div>
+
+          <!-- Results Grid -->
+          <div class="qb-results-container">
+            <div class="qb-results-header">
+              <div id="qb-results-status" style="display:flex;align-items:center;gap:0.75rem;">
+                <span style="font-size:0.85rem;color:var(--text-dim);">Ready to execute query.</span>
+              </div>
+              <div id="qb-export-bar" style="display:none;align-items:center;gap:0.5rem;">
+                <button id="btn-export-results-csv" class="btn btn-secondary btn-sm">Export CSV</button>
+                <button id="btn-export-results-json" class="btn btn-secondary btn-sm">Export JSON</button>
+              </div>
+            </div>
+
+            <div class="table-container" style="flex:1;overflow:auto;">
+              <table class="styled-table">
+                <thead id="qb-results-thead"></thead>
+                <tbody id="qb-results-tbody">
+                  <tr><td style="text-align:center;padding:3rem;color:var(--text-dim);">Run a query to view results.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Modal: Create Table (Visual Table Creator) -->
+  <div id="modal-create-table" class="modal-overlay">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>📋</span>
+          <span>Create New Table</span>
+        </h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="form-create-table">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="create-table-name">Table Name <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="create-table-name" class="form-control" placeholder="e.g. products, employees, invoices" required>
+          </div>
+
+          <div class="form-group" style="margin-top:1.5rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+              <label style="margin:0;font-size:0.85rem;font-weight:700;">Table Columns</label>
+              <button type="button" id="btn-add-table-column" class="btn btn-secondary btn-sm">➕ Add Column</button>
+            </div>
+            <div id="table-columns-container">
+              <!-- Columns rows appended dynamically -->
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:1.5rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+              <label style="margin:0;font-size:0.85rem;font-weight:700;">Foreign Key Relationships (Link to other tables)</label>
+              <button type="button" id="btn-add-table-fk" class="btn btn-secondary btn-sm">🔗 Add Foreign Key</button>
+            </div>
+            <div id="table-fks-container">
+              <!-- FK rows appended dynamically -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Table</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Link Tables (Foreign Key Creator) -->
+  <div id="modal-link-tables" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>🔗</span>
+          <span>Link Tables (Add Foreign Key)</span>
+        </h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="form-link-tables">
+        <div class="modal-body">
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;">
+            Create a foreign key relationship linking a column in a source table to a target table's primary key.
+          </p>
+
+          <div class="form-group">
+            <label for="link-src-table">Source Table (Contains the Foreign Key)</label>
+            <select id="link-src-table" class="form-control" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="link-src-col">Source Column (Foreign Key column)</label>
+            <select id="link-src-col" class="form-control" required></select>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border-color);margin:1.25rem 0;">
+
+          <div class="form-group">
+            <label for="link-tgt-table">Referenced Target Table</label>
+            <select id="link-tgt-table" class="form-control" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="link-tgt-col">Referenced Target Column</label>
+            <select id="link-tgt-col" class="form-control" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="link-on-delete">ON DELETE Action</label>
+            <select id="link-on-delete" class="form-control">
+              <option value="CASCADE">CASCADE (Delete source row when target row is deleted)</option>
+              <option value="SET NULL">SET NULL (Set foreign key to NULL)</option>
+              <option value="RESTRICT">RESTRICT (Prevent deleting target row if referenced)</option>
+              <option value="NO ACTION">NO ACTION</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Establish Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Dynamic Record Add/Edit (Data Entry Screen) -->
+  <div id="modal-record" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="record-modal-title" class="modal-title">
+          <span>📝</span>
+          <span>Add Record</span>
+        </h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="form-record">
+        <div id="record-form-fields" class="modal-body">
+          <!-- Dynamic form fields populated based on table schema -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create Database -->
+  <div id="modal-create-db" class="modal-overlay">
+    <div class="modal-container" style="max-width:420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>🗄️</span>
+          <span>Create New Database</span>
+        </h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="form-create-db">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="new-db-name">Database Name</label>
+            <input type="text" id="new-db-name" class="form-control" placeholder="e.g. inventory, blog, crm" required>
+            <small style="color:var(--text-dim);font-size:0.75rem;margin-top:0.3rem;display:block;">
+              Creates a new SQLite database file in the data folder.
+            </small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Database</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/visualizer.js"></script>
+  <script src="/static/js/data_entry.js"></script>
+  <script src="/static/js/query_builder.js"></script>
+  <script src="/static/js/app.js"></script>
+
+</body>
+</html>

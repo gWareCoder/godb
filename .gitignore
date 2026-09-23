@@ -1,0 +1,30 @@
+# Binaries & build artifacts
+godb_app
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Local Go toolchain & cache (if downloaded locally)
+.go_download/
+.gopath/
+.gocache/
+bin/
+
+# SQLite databases generated at runtime
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.db-journal
+
+# Test artifacts
+*.test
+*.out
+
+# OS & IDE files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
