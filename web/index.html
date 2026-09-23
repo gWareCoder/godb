@@ -246,12 +246,43 @@
         </aside>
 
         <!-- Right: Real-time SQL Preview & Execution Results -->
-        <div class="qb-preview-area">
           <div class="sql-editor-container">
-            <label style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--accent);margin-bottom:0.4rem;display:block;">
-              Generated SQL / Query Editor:
-            </label>
-            <textarea id="raw-sql-input" class="sql-textarea" placeholder="SELECT * FROM customers..."></textarea>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem;">
+              <label style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--accent);display:block;margin:0;">
+                SQL Query Editor:
+              </label>
+              <span style="font-size:0.75rem;color:var(--text-dim);">
+                Shortcut: <kbd style="background:var(--bg-tertiary);padding:0.15rem 0.4rem;border-radius:3px;border:1px solid var(--border-color);">Ctrl</kbd> + <kbd style="background:var(--bg-tertiary);padding:0.15rem 0.4rem;border-radius:3px;border:1px solid var(--border-color);">Enter</kbd>
+              </span>
+            </div>
+            <textarea id="raw-sql-input" class="sql-textarea" placeholder="SELECT * FROM customers;"></textarea>
+            
+            <div class="sql-actions-bar" style="display:flex;align-items:center;justify-content:space-between;margin-top:0.6rem;flex-wrap:wrap;gap:0.5rem;">
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <button id="btn-execute-sql-editor" type="button" class="btn btn-primary btn-sm" style="font-weight:600;padding:0.45rem 1.1rem;box-shadow:var(--shadow-md);">
+                  <span>▶</span>
+                  <span>Execute SQL</span>
+                </button>
+                <button id="btn-clear-sql" type="button" class="btn btn-secondary btn-sm" title="Clear query">
+                  <span>🧹 Clear</span>
+                </button>
+                <button id="btn-format-sql" type="button" class="btn btn-secondary btn-sm" title="Format query keywords">
+                  <span>✨ Format</span>
+                </button>
+              </div>
+
+              <!-- Quick Templates dropdown directly under query editor -->
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <label for="sql-quick-snippets" style="font-size:0.75rem;color:var(--text-dim);margin:0;">Templates:</label>
+                <select id="sql-quick-snippets" class="form-control" style="width:210px;font-size:0.75rem;padding:0.3rem 0.5rem;">
+                  <option value="">-- Load a template --</option>
+                  <option value="select_all">SELECT * FROM ... LIMIT 25</option>
+                  <option value="join_sample">Orders with Customer Names (JOIN)</option>
+                  <option value="count_group">COUNT(*) GROUP BY ...</option>
+                  <option value="tables_list">List all SQLite tables</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <!-- Results Grid -->

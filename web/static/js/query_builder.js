@@ -66,9 +66,37 @@ window.QueryBuilder = {
       this.runVisualQuery();
     });
 
-    // Run Raw SQL Button
+    // Run Raw SQL Button (in sidebar)
     document.getElementById('btn-run-raw-sql')?.addEventListener('click', () => {
       this.runRawSQL();
+    });
+
+    // Run SQL Button (directly below the query editor box)
+    document.getElementById('btn-execute-sql-editor')?.addEventListener('click', () => {
+      this.runRawSQL();
+    });
+
+    // Clear Query Button
+    document.getElementById('btn-clear-sql')?.addEventListener('click', () => {
+      const rawInput = document.getElementById('raw-sql-input');
+      if (rawInput) {
+        rawInput.value = '';
+        rawInput.dataset.synced = 'false';
+        rawInput.focus();
+      }
+    });
+
+    // Format Query Button
+    document.getElementById('btn-format-sql')?.addEventListener('click', () => {
+      this.formatSQL();
+    });
+
+    // Quick Snippets Dropdown below query box
+    document.getElementById('sql-quick-snippets')?.addEventListener('change', (e) => {
+      const template = e.target.value;
+      if (!template) return;
+      this.applyTemplate(template);
+      e.target.value = '';
     });
 
     // Keyboard shortcut Ctrl+Enter or Cmd+Enter for Raw SQL
@@ -80,7 +108,7 @@ window.QueryBuilder = {
       }
     });
 
-    // Raw SQL Templates
+    // Raw SQL Templates in sidebar
     document.getElementById('sql-template-select')?.addEventListener('change', (e) => {
       const template = e.target.value;
       if (!template) return;
@@ -492,6 +520,29 @@ window.QueryBuilder = {
         rawInput.value = `SELECT name, type FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';`;
         break;
     }
+  },
+
+  formatSQL() {
+    const rawInput = document.getElementById('raw-sql-input');
+    if (!rawInput) return;
+    let sql = rawInput.value;
+    if (!sql.trim()) return;
+
+    const keywords = [
+      'SELECT', 'DISTINCT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT',
+      'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'CROSS JOIN', 'JOIN', 'ON',
+      'ORDER BY', 'GROUP BY', 'HAVING', 'LIMIT', 'OFFSET',
+      'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE',
+      'DROP TABLE', 'ALTER TABLE', 'PRIMARY KEY', 'AUTOINCREMENT',
+      'ASC', 'DESC', 'AS', 'IN', 'IS NULL', 'IS NOT NULL', 'LIKE'
+    ];
+
+    keywords.forEach(kw => {
+      const regex = new RegExp(`\\b${kw}\\b`, 'gi');
+      sql = sql.replace(regex, kw);
+    });
+
+    rawInput.value = sql.trim();
   },
 
   renderQueryResults(result) {
