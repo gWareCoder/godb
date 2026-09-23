@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-gwarecoder-181717?logo=github)](https://github.com/gwarecoder/godb)
 
-**GoDB** is a full-featured, self-contained relational database management application built by [@gwarecoder](https://github.com/gwarecoder) with a high-performance Go backend and a sleek, interactive frontend. It allows users to create databases, visually design and link tables with foreign keys, manage records using intuitive dynamic data entry screens, and construct SQL queries using a visual query builder and raw SQL console.
+**GoDB** is a full-featured, self-contained relational database management application built by [@gwarecoder](https://github.com/gwarecoder) with a high-performance Go backend and an interactive web frontend. It allows users to create databases, visually design and link tables with foreign keys, manage records using intuitive dynamic data entry screens, and construct SQL queries using a visual query builder and raw SQL console.
 
 ---
 
@@ -44,31 +44,132 @@
 
 ---
 
-## Quick Start
+## Prerequisites
 
-### 1. Build and Run
+- **Go**: Version 1.22 or higher installed ([Download Go](https://go.dev/dl/)).
+- **Git**: Installed on your system.
+- **Compiler Requirements**: **None!** GoDB uses a pure-Go SQLite driver, meaning no C compiler (`gcc`, `clang`, or CGO) is required.
 
-To compile and launch the application:
+---
 
-```bash
-# Build the binary
-./bin/go build -o godb_app main.go
+## Installation & Setup
 
-# Start the server on port 8080 (or specify with -port=XXXX)
-./godb_app -port=8080
-```
-
-Once started, open your web browser at:
-```
-http://localhost:8080
-```
-
-### 2. Run Automated Tests
-
-To run the unit and integration test suite:
+### 1. Clone the Repository
 
 ```bash
-./bin/go test -v ./...
+git clone https://github.com/gwarecoder/godb.git
+cd godb
+```
+
+### 2. Download Dependencies
+
+Fetch the pure-Go SQLite driver and required modules:
+
+```bash
+go mod download
+```
+
+*(If you are using the repository's local toolchain, you can run `./bin/go mod download` instead).*
+
+---
+
+## Building and Running the Application
+
+### Method 1: Build a Standalone Binary (Recommended)
+
+Compile a standalone, self-contained binary:
+
+```bash
+# Build binary
+go build -o godb_app main.go
+
+# Run the application
+./godb_app
+```
+
+> **Note**: If Go is not in your global system `PATH`, you can use the bundled local binary:
+> ```bash
+> ./bin/go build -o godb_app main.go
+> ./godb_app
+> ```
+
+On Windows (Command Prompt or PowerShell):
+```cmd
+go build -o godb_app.exe main.go
+godb_app.exe
+```
+
+---
+
+### Method 2: Run Directly with Go (Development Mode)
+
+Run the server directly without manually compiling an executable:
+
+```bash
+go run main.go
+```
+*(or `./bin/go run main.go`)*
+
+---
+
+### Method 3: Run as a Background Process
+
+To keep GoDB running in the background on a server or terminal:
+
+```bash
+nohup ./godb_app -port=8080 > godb.log 2>&1 &
+```
+
+To stop a background instance:
+```bash
+pkill godb_app
+```
+
+---
+
+## Configuration Options
+
+GoDB supports custom command-line flags:
+
+| Flag | Default | Description | Example |
+|---|---|---|---|
+| `-port` | `8080` | Port number to bind the HTTP web server | `./godb_app -port=3000` |
+| `-data` | `./data` | File directory to store SQLite `.db` databases | `./godb_app -data=/var/lib/godb` |
+
+#### Example: Running on a Custom Port and Data Directory
+```bash
+./godb_app -port=9000 -data=./my_databases
+```
+
+---
+
+## Accessing the Web Interface
+
+Once the server is running, open your web browser and navigate to:
+
+👉 **[http://localhost:8080](http://localhost:8080)**
+
+*(Replace `8080` with your custom port if specified).*
+
+### First Steps:
+1. **Load Sample Data**: Click **"Load Sample DB"** in the top navigation bar to populate your database with pre-built interconnected tables (`customers`, `products`, `orders`, `order_items`).
+2. **Explore Schema Visualizer**: Drag table cards around the canvas to inspect foreign key links (connected with dynamic SVG arrows).
+3. **Create & Link Tables**: Click **"+ Create Table"** to design new tables, or **"Link Tables"** to establish foreign key constraints.
+4. **Enter Data**: Switch to the **Data Entry** tab to add, edit, or delete records. Foreign key fields automatically display readable dropdown selectors (e.g. `#1 - Alice Johnson (alice@example.com)`).
+5. **Run Queries**: Switch to the **SQL Query Builder** tab to build visual queries with 1-click JOINs, or write custom queries in the raw SQL editor.
+
+---
+
+## Running Automated Tests
+
+GoDB includes comprehensive unit and integration tests covering database switching, schema creation, table linking migrations, cascading foreign key deletes, CRUD operations, and query builder generation:
+
+```bash
+# Run all tests
+go test -v ./...
+
+# Run tests without cache
+go test -count=1 -v ./...
 ```
 
 ---
@@ -94,3 +195,9 @@ To run the unit and integration test suite:
 | `POST` | `/api/query/preview` | Preview SQL generated from query builder |
 | `POST` | `/api/query/build` | Build and execute visual query builder AST |
 | `POST` | `/api/query/execute` | Execute arbitrary SQL query |
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
